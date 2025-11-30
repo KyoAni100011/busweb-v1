@@ -7,7 +7,7 @@ Setup:
 
 Run:
 
-- npm run de
+- npm run dev
 
 Note:
 
