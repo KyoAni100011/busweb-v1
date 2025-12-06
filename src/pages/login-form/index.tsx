@@ -1,10 +1,14 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { GoogleIcon } from '@/core/icons/google';
+import { useAuth } from '@/contexts/AuthContext';
+import { authService } from '@/services/auth.service';
+import { useNavigate } from 'react-router-dom';
 
 import {
   Form,
@@ -19,9 +23,30 @@ import { useZodForm } from '@/lib/useZodForm';
 
 export function LoginForm() {
   const form = useZodForm(SignUpSchema);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const onSubmit = (data: SignUp) => {
-    console.log(data);
+  const onSubmit = async (data: SignUp) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      console.log('[LoginForm] Starting login...');
+      await login(data.email, data.password);
+      console.log('[LoginForm] Login successful, navigating to admin...');
+      
+      navigate('/admin', { replace: true });
+    } catch (err: any) {
+      console.error('[LoginForm] Login error:', err);
+      setError(err.response?.data?.message || err.message || 'Login failed. Please try again.');
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = authService.getGoogleAuthUrl();
   };
 
   return (
@@ -69,8 +94,18 @@ export function LoginForm() {
                 )}
               />
 
-              <Button type="submit" className="mt-4 w-full py-2 font-medium">
-                Sign in
+              {error && (
+                <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                className="mt-4 w-full py-2 font-medium"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>
           </Form>
@@ -89,12 +124,11 @@ export function LoginForm() {
           <Button
             variant="outline"
             className="flex w-full items-center justify-center space-x-2 py-2"
-            asChild
+            onClick={handleGoogleLogin}
+            type="button"
           >
-            <a href="#">
-              <GoogleIcon className="size-5" aria-hidden />
-              <span className="text-sm font-medium">Sign in with Google</span>
-            </a>
+            <GoogleIcon className="size-5" aria-hidden />
+            <span className="text-sm font-medium">Sign in with Google</span>
           </Button>
 
           <p className="mt-4 text-xs text-muted-foreground">

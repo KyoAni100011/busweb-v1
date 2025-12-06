@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clear Auth Storage</title>
+  <script>
+    // Clear any corrupted auth data
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    console.log('Auth storage cleared');
+    // Redirect to login
+    window.location.href = '/login';
+  </script>
+</head>
+<body>
+  <p>Clearing storage and redirecting...</p>
+</body>
+</html>
