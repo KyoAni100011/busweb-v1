@@ -18,9 +18,9 @@ export interface RoleAwareUser {
 
 const envIdentifiers = (import.meta.env.VITE_ADMIN_ROLE_IDS ?? '')
   .split(',')
-  .map((identifier) => identifier.trim())
+  .map((identifier: string) => identifier.trim())
   .filter(Boolean)
-  .map((identifier) => identifier.toLowerCase());
+  .map((identifier: string) => identifier.toLowerCase());
 
 const ADMIN_ROLE_IDENTIFIERS = envIdentifiers.length > 0
   ? envIdentifiers

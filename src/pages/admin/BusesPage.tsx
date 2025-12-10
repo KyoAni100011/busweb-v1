@@ -12,11 +12,10 @@ export const BusesPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingBus, setEditingBus] = useState<Bus | null>(null);
   const [formData, setFormData] = useState<CreateBusDto>({
-    busNumber: '',
     plateNumber: '',
-    capacity: 0,
-    type: '',
-    status: 'ACTIVE',
+    busType: '',
+    totalSeats: 0,
+    amenities: '',
   });
 
   useEffect(() => {
@@ -54,11 +53,10 @@ export const BusesPage: React.FC = () => {
   const handleEdit = (bus: Bus) => {
     setEditingBus(bus);
     setFormData({
-      busNumber: bus.busNumber,
       plateNumber: bus.plateNumber,
-      capacity: bus.capacity,
-      type: bus.type,
-      status: bus.status,
+      busType: bus.busType,
+      totalSeats: bus.totalSeats,
+      amenities: bus.amenities ?? '',
     });
     setShowForm(true);
   };
@@ -78,11 +76,10 @@ export const BusesPage: React.FC = () => {
     setShowForm(false);
     setEditingBus(null);
     setFormData({
-      busNumber: '',
       plateNumber: '',
-      capacity: 0,
-      type: '',
-      status: 'ACTIVE',
+      busType: '',
+      totalSeats: 0,
+      amenities: '',
     });
   };
 
@@ -107,17 +104,6 @@ export const BusesPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="busNumber">Bus Number</Label>
-                <Input
-                  id="busNumber"
-                  value={formData.busNumber}
-                  onChange={(e) =>
-                    setFormData({ ...formData, busNumber: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
                 <Label htmlFor="plateNumber">Plate Number</Label>
                 <Input
                   id="plateNumber"
@@ -129,49 +115,44 @@ export const BusesPage: React.FC = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="capacity">Capacity</Label>
+                <Label htmlFor="busType">Bus Type</Label>
                 <Input
-                  id="capacity"
+                  id="busType"
+                  value={formData.busType}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      busType: e.target.value,
+                    })
+                  }
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="totalSeats">Total Seats</Label>
+                <Input
+                  id="totalSeats"
                   type="number"
-                  value={formData.capacity}
+                  value={formData.totalSeats}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      capacity: Number(e.target.value),
+                      totalSeats: Number(e.target.value),
                     })
                   }
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="amenities">Amenities</Label>
                 <Input
-                  id="type"
-                  value={formData.type}
+                  id="amenities"
+                  value={formData.amenities ?? ''}
                   onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
+                    setFormData({ ...formData, amenities: e.target.value })
                   }
-                  placeholder="e.g., Standard, Luxury, Sleeper"
-                  required
+                  placeholder="Comma separated (e.g., WiFi, AC)"
                 />
-              </div>
-              <div>
-                <Label htmlFor="status">Status</Label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      status: e.target.value as 'ACTIVE' | 'MAINTENANCE' | 'INACTIVE',
-                    })
-                  }
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="ACTIVE">Active</option>
-                  <option value="MAINTENANCE">Maintenance</option>
-                  <option value="INACTIVE">Inactive</option>
-                </select>
               </div>
             </div>
             <div className="flex gap-2">
@@ -192,19 +173,16 @@ export const BusesPage: React.FC = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Bus Number
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Plate Number
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Type
+                  Bus Type
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Capacity
+                  Total Seats
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Status
+                  Amenities
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Actions
@@ -214,13 +192,13 @@ export const BusesPage: React.FC = () => {
             <tbody className="divide-y divide-gray-200 bg-white">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center">
+                  <td colSpan={5} className="px-6 py-4 text-center">
                     Loading...
                   </td>
                 </tr>
               ) : buses.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center">
+                  <td colSpan={5} className="px-6 py-4 text-center">
                     No buses found
                   </td>
                 </tr>
@@ -228,29 +206,16 @@ export const BusesPage: React.FC = () => {
                 buses.map((bus) => (
                   <tr key={bus.id}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                      {bus.busNumber}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                       {bus.plateNumber}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {bus.type}
+                      {bus.busType}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {bus.capacity} seats
+                      {bus.totalSeats} seats
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                          bus.status === 'ACTIVE'
-                            ? 'bg-green-100 text-green-800'
-                            : bus.status === 'MAINTENANCE'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {bus.status}
-                      </span>
+                      {bus.amenities || '—'}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       <div className="flex gap-2">

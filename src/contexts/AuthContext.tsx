@@ -7,8 +7,8 @@ type User = AuthResponse['user'];
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthResponse>;
+  register: (email: string, password: string, username?: string, fullName?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -64,11 +64,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string) => {
     const authData = await authService.login({ email, password });
     handleAuthSuccess(authData);
+
+    return authData;
   };
 
-  const register = async (email: string, password: string) => {
-    const authData = await authService.register({ email, password });
-    handleAuthSuccess(authData);
+  const register = async (email: string, password: string, username?: string, fullName?: string) => {
+    await authService.register({ email, password, username, fullName });
   };
 
   const logout = () => {
@@ -91,10 +92,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}

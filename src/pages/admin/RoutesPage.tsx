@@ -16,9 +16,6 @@ export const RoutesPage: React.FC = () => {
     origin: '',
     destination: '',
     distance: 0,
-    duration: 0,
-    price: 0,
-    status: 'ACTIVE',
   });
 
   useEffect(() => {
@@ -60,9 +57,6 @@ export const RoutesPage: React.FC = () => {
       origin: route.origin,
       destination: route.destination,
       distance: route.distance,
-      duration: route.duration,
-      price: route.price,
-      status: route.status,
     });
     setShowForm(true);
   };
@@ -86,9 +80,6 @@ export const RoutesPage: React.FC = () => {
       origin: '',
       destination: '',
       distance: 0,
-      duration: 0,
-      price: 0,
-      status: 'ACTIVE',
     });
   };
 
@@ -122,23 +113,6 @@ export const RoutesPage: React.FC = () => {
                   }
                   required
                 />
-              </div>
-              <div>
-                <Label htmlFor="status">Status</Label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      status: e.target.value as 'ACTIVE' | 'INACTIVE',
-                    })
-                  }
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  <option value="ACTIVE">Active</option>
-                  <option value="INACTIVE">Inactive</option>
-                </select>
               </div>
               <div>
                 <Label htmlFor="origin">Origin</Label>
@@ -177,34 +151,6 @@ export const RoutesPage: React.FC = () => {
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="duration">Duration (minutes)</Label>
-                <Input
-                  id="duration"
-                  type="number"
-                  value={formData.duration}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      duration: Number(e.target.value),
-                    })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="price">Price ($)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) =>
-                    setFormData({ ...formData, price: Number(e.target.value) })
-                  }
-                  required
-                />
-              </div>
             </div>
             <div className="flex gap-2">
               <Button type="submit">
@@ -233,16 +179,7 @@ export const RoutesPage: React.FC = () => {
                   Destination
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Distance
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Price
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Status
+                  Distance (km)
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Actions
@@ -252,13 +189,13 @@ export const RoutesPage: React.FC = () => {
             <tbody className="divide-y divide-gray-200 bg-white">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center">
+                  <td colSpan={5} className="px-6 py-4 text-center">
                     Loading...
                   </td>
                 </tr>
               ) : routes.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center">
+                  <td colSpan={5} className="px-6 py-4 text-center">
                     No routes found
                   </td>
                 </tr>
@@ -275,24 +212,7 @@ export const RoutesPage: React.FC = () => {
                       {route.destination}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {route.distance} km
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {route.duration} min
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      ${route.price}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                          route.status === 'ACTIVE'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {route.status}
-                      </span>
+                      {route.distance}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       <div className="flex gap-2">

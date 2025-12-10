@@ -16,10 +16,7 @@ export const StopsPage: React.FC = () => {
   const [editingStop, setEditingStop] = useState<Stop | null>(null);
   const [formData, setFormData] = useState<CreateStopDto>({
     name: '',
-    location: '',
-    order: 1,
-    arrivalTime: '',
-    departureTime: '',
+    orderIndex: 1,
   });
 
   useEffect(() => {
@@ -76,10 +73,7 @@ export const StopsPage: React.FC = () => {
     setEditingStop(stop);
     setFormData({
       name: stop.name,
-      location: stop.location,
-      order: stop.order,
-      arrivalTime: stop.arrivalTime,
-      departureTime: stop.departureTime,
+      orderIndex: stop.orderIndex,
     });
     setShowForm(true);
   };
@@ -102,10 +96,7 @@ export const StopsPage: React.FC = () => {
     setEditingStop(null);
     setFormData({
       name: '',
-      location: '',
-      order: 1,
-      arrivalTime: '',
-      departureTime: '',
+      orderIndex: 1,
     });
   };
 
@@ -158,48 +149,13 @@ export const StopsPage: React.FC = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="location">Location</Label>
+                <Label htmlFor="orderIndex">Order</Label>
                 <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) =>
-                    setFormData({ ...formData, location: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="order">Order</Label>
-                <Input
-                  id="order"
+                  id="orderIndex"
                   type="number"
-                  value={formData.order}
+                  value={formData.orderIndex}
                   onChange={(e) =>
-                    setFormData({ ...formData, order: Number(e.target.value) })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="arrivalTime">Arrival Time</Label>
-                <Input
-                  id="arrivalTime"
-                  type="time"
-                  value={formData.arrivalTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, arrivalTime: e.target.value })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="departureTime">Departure Time</Label>
-                <Input
-                  id="departureTime"
-                  type="time"
-                  value={formData.departureTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, departureTime: e.target.value })
+                    setFormData({ ...formData, orderIndex: Number(e.target.value) })
                   }
                   required
                 />
@@ -229,15 +185,6 @@ export const StopsPage: React.FC = () => {
                   Stop Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Location
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Arrival
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Departure
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Actions
                 </th>
               </tr>
@@ -245,19 +192,19 @@ export const StopsPage: React.FC = () => {
             <tbody className="divide-y divide-gray-200 bg-white">
               {!selectedRouteId ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
                     Please select a route to view stops
                   </td>
                 </tr>
               ) : isLoading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center">
+                  <td colSpan={3} className="px-6 py-4 text-center">
                     Loading...
                   </td>
                 </tr>
               ) : stops.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center">
+                  <td colSpan={3} className="px-6 py-4 text-center">
                     No stops found for this route
                   </td>
                 </tr>
@@ -265,19 +212,10 @@ export const StopsPage: React.FC = () => {
                 stops.map((stop) => (
                   <tr key={stop.id}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                      {stop.order}
+                      {stop.orderIndex}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                       {stop.name}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {stop.location}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {stop.arrivalTime}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {stop.departureTime}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       <div className="flex gap-2">

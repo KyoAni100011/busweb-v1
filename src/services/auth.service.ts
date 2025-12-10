@@ -9,6 +9,9 @@ export interface LoginCredentials {
 export interface RegisterCredentials {
   email: string;
   password: string;
+  username?: string;
+  fullName?: string;
+  full_name?: string;
 }
 
 export interface AuthUser extends RoleAwareUser {
@@ -21,6 +24,11 @@ export interface AuthResponse {
   token: string;
   refreshToken?: string;
   user: AuthUser;
+}
+
+export interface RegisterResponse {
+  message?: string;
+  token?: string;
 }
 
 type UnknownRecord = Record<string, unknown>;
@@ -248,10 +256,23 @@ export const authService = {
     return normalizeAuthResponse(response.data);
   },
 
-  async register(credentials: RegisterCredentials): Promise<AuthResponse> {
-    const response = await api.post('/auth/register', credentials);
+  async register(credentials: RegisterCredentials): Promise<RegisterResponse> {
+    const fullNameValue = credentials.full_name ?? credentials.fullName;
 
-    return normalizeAuthResponse(response.data);
+    const payload = {
+      email: credentials.email,
+      password: credentials.password,
+      username: credentials.username,
+      full_name: fullNameValue,
+    };
+
+    const response = await api.post('/auth/register', payload);
+
+    if ((response.data as any)?.token) {
+      return normalizeAuthResponse(response.data);
+    }
+
+    return response.data as RegisterResponse;
   },
 
   getGoogleAuthUrl(): string {

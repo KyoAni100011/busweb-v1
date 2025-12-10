@@ -18,26 +18,28 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
-import { SignUpSchema, type SignUp } from './validation';
+import { SignInSchema, type SignIn } from './validation';
 import { useZodForm } from '@/lib/useZodForm';
+import { Link } from 'react-router-dom';
 
 export function LoginForm() {
-  const form = useZodForm(SignUpSchema);
+  const form = useZodForm(SignInSchema);
   const { login } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const onSubmit = async (data: SignUp) => {
+  const onSubmit = async (data: SignIn) => {
     try {
       setIsLoading(true);
       setError(null);
       
       console.log('[LoginForm] Starting login...');
-      await login(data.email, data.password);
-      console.log('[LoginForm] Login successful, navigating to admin...');
-      
-      navigate('/admin', { replace: true });
+      const authData = await login(data.email, data.password);
+      console.log('[LoginForm] Login successful, navigating...');
+
+      const isAdmin = authData.user?.role === 'ADMIN' || authData.user?.roles?.includes?.('ADMIN');
+      navigate(isAdmin ? '/admin' : '/', { replace: true });
     } catch (err: any) {
       console.error('[LoginForm] Login error:', err);
       setError(err.response?.data?.message || err.message || 'Login failed. Please try again.');
@@ -56,6 +58,9 @@ export function LoginForm() {
           <h2 className="text-center text-xl font-semibold text-foreground">
             Log in or create account
           </h2>
+          <p className="mt-2 text-center text-sm text-muted-foreground">
+            Welcome back! Sign in or register to continue.
+          </p>
 
           <Form {...form}>
             <form
@@ -107,6 +112,15 @@ export function LoginForm() {
               >
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full py-2 font-medium"
+                onClick={() => navigate('/register')}
+              >
+                Create account
+              </Button>
             </form>
           </Form>
 
@@ -141,6 +155,13 @@ export function LoginForm() {
               privacy policy
             </a>
             .
+          </p>
+
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            New here?{' '}
+            <Link to="/register" className="text-primary hover:underline">
+              Create an account
+            </Link>
           </p>
         </div>
       </div>

@@ -20,7 +20,7 @@ export const TripsPage: React.FC = () => {
     busId: '',
     departureTime: '',
     arrivalTime: '',
-    price: 0,
+    basePrice: 0,
     status: 'SCHEDULED',
   });
 
@@ -71,7 +71,7 @@ export const TripsPage: React.FC = () => {
       busId: trip.busId,
       departureTime: trip.departureTime,
       arrivalTime: trip.arrivalTime,
-      price: trip.price,
+      basePrice: trip.basePrice,
       status: trip.status,
     });
     setShowForm(true);
@@ -96,9 +96,25 @@ export const TripsPage: React.FC = () => {
       busId: '',
       departureTime: '',
       arrivalTime: '',
-      price: 0,
+      basePrice: 0,
       status: 'SCHEDULED',
     });
+  };
+
+  const getBusLabel = (busId: string) => {
+    const bus = buses.find((item) => item.id === busId);
+
+    if (bus) {
+      return `${bus.plateNumber} · ${bus.busType}`;
+    }
+
+    const fallback = trips.find((trip) => trip.bus?.id === busId)?.bus;
+
+    if (fallback) {
+      return `${fallback.plateNumber} · ${fallback.busType}`;
+    }
+
+    return '—';
   };
 
   return (
@@ -154,7 +170,7 @@ export const TripsPage: React.FC = () => {
                   <option value="">Select Bus</option>
                   {buses.map((bus) => (
                     <option key={bus.id} value={bus.id}>
-                      {bus.busNumber} - {bus.type} ({bus.capacity} seats)
+                      {bus.plateNumber} · {bus.busType} ({bus.totalSeats} seats)
                     </option>
                   ))}
                 </select>
@@ -184,14 +200,14 @@ export const TripsPage: React.FC = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="price">Price ($)</Label>
+                <Label htmlFor="basePrice">Base Price</Label>
                 <Input
-                  id="price"
+                  id="basePrice"
                   type="number"
                   step="0.01"
-                  value={formData.price}
+                  value={formData.basePrice}
                   onChange={(e) =>
-                    setFormData({ ...formData, price: Number(e.target.value) })
+                    setFormData({ ...formData, basePrice: Number(e.target.value) })
                   }
                   required
                 />
@@ -246,7 +262,7 @@ export const TripsPage: React.FC = () => {
                   Arrival
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                  Price
+                  Base Price
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Status
@@ -273,10 +289,14 @@ export const TripsPage: React.FC = () => {
                 trips.map((trip) => (
                   <tr key={trip.id}>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                      {routes.find((r) => r.id === trip.routeId)?.name}
+                      {routes.find((r) => r.id === trip.routeId)?.name || trip.route?.name || '—'}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      {buses.find((b) => b.id === trip.busId)?.busNumber}
+                      {getBusLabel(trip.busId) !== '—'
+                        ? getBusLabel(trip.busId)
+                        : trip.bus
+                          ? `${trip.bus.plateNumber} · ${trip.bus.busType}`
+                          : '—'}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                       {new Date(trip.departureTime).toLocaleString()}
@@ -285,7 +305,7 @@ export const TripsPage: React.FC = () => {
                       {new Date(trip.arrivalTime).toLocaleString()}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                      ${trip.price}
+                      ${trip.basePrice}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm">
                       <span

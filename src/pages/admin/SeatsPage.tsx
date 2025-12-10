@@ -134,7 +134,7 @@ export const SeatsPage: React.FC = () => {
           <option value="">Select a bus</option>
           {buses.map((bus) => (
             <option key={bus.id} value={bus.id}>
-              {bus.busNumber} - {bus.type}
+              {bus.plateNumber} · {bus.busType}
             </option>
           ))}
         </select>
