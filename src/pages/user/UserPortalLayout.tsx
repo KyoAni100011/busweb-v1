@@ -6,9 +6,13 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const navLinks = [
   { label: 'Search Trips', to: '/' },
-  { label: 'My Bookings', to: '/booking/history' },
   { label: 'Guest Lookup', to: '/booking/lookup' },
-  { label: 'Register', to: '/register' },
+];
+
+const authNavLinks = [
+  { label: 'Search Trips', to: '/' },
+  { label: 'My Dashboard', to: '/user' },
+  { label: 'My Bookings', to: '/user/bookings' },
 ];
 
 const activeClass = 'text-primary font-semibold';
@@ -16,6 +20,8 @@ const inactiveClass = 'text-muted-foreground hover:text-primary';
 
 export const UserPortalLayout: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
+  const links = isAuthenticated ? authNavLinks : navLinks;
+
   return (
     <BookingProvider>
       <div className="min-h-screen bg-gray-50">
@@ -25,7 +31,7 @@ export const UserPortalLayout: React.FC = () => {
               BusTickets.vn
             </Link>
             <nav className="hidden gap-6 md:flex">
-              {navLinks.map((item) => (
+              {links.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
@@ -50,7 +56,9 @@ export const UserPortalLayout: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <span className="text-sm text-muted-foreground">Hi, {user?.name || user?.email}</span>
+                  <NavLink to="/user" className="text-sm text-muted-foreground hover:text-primary">
+                    Hi, {user?.name || user?.email}
+                  </NavLink>
                   <Button variant="outline" size="sm" onClick={logout}>
                     Logout
                   </Button>

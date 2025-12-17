@@ -1,5 +1,3 @@
-import { string } from 'zod';
-
 export interface Route {
   id: string;
   name: string;
@@ -255,4 +253,89 @@ export interface GuestLookupRequest {
 
 export interface GuestLookupResponse {
   booking?: BookingConfirmation;
+}
+
+// Revenue Analytics Types
+export interface RevenueMetrics {
+  totalRevenue: number;
+  totalBookings: number;
+  averageTicketPrice: number;
+  refundedAmount: number;
+  netRevenue: number;
+  currency: string;
+}
+
+export interface DailyRevenue {
+  date: string;
+  revenue: number;
+  bookings: number;
+  refunds: number;
+}
+
+export interface MonthlyRevenue {
+  month: string;
+  year: number;
+  revenue: number;
+  bookings: number;
+  growth: number;
+}
+
+export interface RouteRevenue {
+  routeId: string;
+  routeName: string;
+  origin: string;
+  destination: string;
+  totalRevenue: number;
+  bookings: number;
+  averagePrice: number;
+  occupancyRate: number;
+}
+
+export interface BusTypeRevenue {
+  busType: string;
+  revenue: number;
+  bookings: number;
+  percentage: number;
+}
+
+export interface PaymentMethodStats {
+  method: string;
+  count: number;
+  amount: number;
+  percentage: number;
+}
+
+export interface BookingStatusStats {
+  status: 'CONFIRMED' | 'PENDING' | 'CANCELLED';
+  count: number;
+  amount: number;
+  percentage: number;
+}
+
+export interface TopRoute {
+  routeId: string;
+  routeName: string;
+  revenue: number;
+  bookings: number;
+  trend: 'up' | 'down' | 'stable';
+  trendPercentage: number;
+}
+
+export interface RevenueAnalyticsSummary {
+  metrics: RevenueMetrics;
+  dailyRevenue: DailyRevenue[];
+  monthlyRevenue: MonthlyRevenue[];
+  routeRevenue: RouteRevenue[];
+  busTypeRevenue: BusTypeRevenue[];
+  paymentMethods: PaymentMethodStats[];
+  bookingStatuses: BookingStatusStats[];
+  topRoutes: TopRoute[];
+  periodStart: string;
+  periodEnd: string;
+}
+
+export interface AnalyticsDateRange {
+  startDate: string;
+  endDate: string;
+  preset?: 'today' | 'yesterday' | 'last7days' | 'last30days' | 'thisMonth' | 'lastMonth' | 'thisYear' | 'custom';
 }

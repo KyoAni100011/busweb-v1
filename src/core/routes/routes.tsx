@@ -2,7 +2,9 @@ import React from 'react';
 import { LoginForm } from '@/pages/login-form';
 import { AuthCallback } from '@/pages/auth-callback';
 import { AdminLayout } from '@/components/layouts/AdminLayout';
+import { UserLayout } from '@/components/layouts/UserLayout';
 import { AdminDashboard } from '@/pages/admin/Dashboard';
+import { RevenueAnalyticsPage } from '@/pages/admin/RevenueAnalyticsPage';
 import { RoutesPage } from '@/pages/admin/RoutesPage';
 import { BusesPage } from '@/pages/admin/BusesPage';
 import { StopsPage } from '@/pages/admin/StopsPage';
@@ -16,6 +18,9 @@ import { TripDetailsPage } from '@/pages/user/TripDetailsPage';
 import { SeatSelectionPage } from '@/pages/user/SeatSelectionPage';
 import { BookingHistoryPage } from '@/pages/user/BookingHistoryPage';
 import { GuestLookupPage } from '@/pages/user/GuestLookupPage';
+import { UserDashboard } from '@/pages/user/UserDashboard';
+import { UserBookingsPage } from '@/pages/user/UserBookingsPage';
+import { UserProfilePage } from '@/pages/user/UserProfilePage';
 import RegisterPage from '@/pages/register';
 import {
   createBrowserRouter,
@@ -120,6 +125,29 @@ const router = createBrowserRouter([
     errorElement: <RouteError />,
   },
   {
+    path: '/user',
+    element: (
+      <ProtectedRoute requiredRole="USER">
+        <UserLayout />
+      </ProtectedRoute>
+    ),
+    errorElement: <RouteError />,
+    children: [
+      {
+        index: true,
+        element: <UserDashboard />,
+      },
+      {
+        path: 'bookings',
+        element: <UserBookingsPage />,
+      },
+      {
+        path: 'profile',
+        element: <UserProfilePage />,
+      },
+    ],
+  },
+  {
     path: '/admin',
     element: (
       <ProtectedRoute>
@@ -131,6 +159,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <AdminDashboard />,
+      },
+      {
+        path: 'analytics',
+        element: <RevenueAnalyticsPage />,
       },
       {
         path: 'routes',
