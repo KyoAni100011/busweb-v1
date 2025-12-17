@@ -17,12 +17,22 @@ import { SeatSelectionPage } from '@/pages/user/SeatSelectionPage';
 import { BookingHistoryPage } from '@/pages/user/BookingHistoryPage';
 import { GuestLookupPage } from '@/pages/user/GuestLookupPage';
 import RegisterPage from '@/pages/register';
-import { createBrowserRouter, isRouteErrorResponse, useRouteError } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  isRouteErrorResponse,
+  useRouteError,
+} from 'react-router-dom';
+import { PaymentSuccess } from '@/pages/payment/PaymentSuccess';
+import PaymentCancel from '@/pages/payment/PaymentCancel';
 
 const RouteError: React.FC = () => {
   const error = useRouteError();
-  const title = isRouteErrorResponse(error) ? `${error.status} ${error.statusText}` : 'Something went wrong';
-  const message = isRouteErrorResponse(error) ? error.data || 'Please try again.' : 'Please try again.';
+  const title = isRouteErrorResponse(error)
+    ? `${error.status} ${error.statusText}`
+    : 'Something went wrong';
+  const message = isRouteErrorResponse(error)
+    ? error.data || 'Please try again.'
+    : 'Please try again.';
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6 py-12">
@@ -30,10 +40,23 @@ const RouteError: React.FC = () => {
         <p className="text-sm uppercase tracking-wide text-primary">Error</p>
         <h1 className="mt-2 text-2xl font-semibold text-gray-900">{title}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{String(message)}</p>
-        <p className="mt-4 text-sm text-muted-foreground">You can go back or return home.</p>
+        <p className="mt-4 text-sm text-muted-foreground">
+          You can go back or return home.
+        </p>
         <div className="mt-6 flex gap-3">
-          <a href="/" className="rounded-md bg-primary px-4 py-2 text-white transition hover:bg-primary/90">Go home</a>
-          <button type="button" onClick={() => window.history.back()} className="rounded-md border px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-50">Go back</button>
+          <a
+            href="/"
+            className="rounded-md bg-primary px-4 py-2 text-white transition hover:bg-primary/90"
+          >
+            Go home
+          </a>
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="rounded-md border px-4 py-2 text-sm text-gray-700 transition hover:bg-gray-50"
+          >
+            Go back
+          </button>
         </div>
       </div>
     </div>
@@ -69,6 +92,15 @@ const router = createBrowserRouter([
       {
         path: 'booking/lookup',
         element: <GuestLookupPage />,
+      },
+
+      {
+        path: 'payment/success',
+        element: <PaymentSuccess />,
+      },
+      {
+        path: 'payment/cancel',
+        element: <PaymentCancel />,
       },
     ],
   },

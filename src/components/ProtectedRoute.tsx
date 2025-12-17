@@ -13,11 +13,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { isAuthenticated, isAdmin, isLoading, user } = useAuth();
 
-  console.log('[ProtectedRoute] isLoading:', isLoading);
-  console.log('[ProtectedRoute] isAuthenticated:', isAuthenticated);
-  console.log('[ProtectedRoute] isAdmin:', isAdmin);
-  console.log('[ProtectedRoute] user:', user);
-
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -30,15 +25,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated) {
-    console.log('[ProtectedRoute] Not authenticated, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
   if (requiredRole === 'ADMIN' && !isAdmin) {
-    console.log('[ProtectedRoute] Not admin, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
-  console.log('[ProtectedRoute] Access granted');
   return <>{children}</>;
 };

@@ -8,7 +8,12 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<AuthResponse>;
-  register: (email: string, password: string, username?: string, fullName?: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    username?: string,
+    fullName?: string
+  ) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
@@ -25,36 +30,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.log('AuthContext: Loading auth data from localStorage');
     try {
       const storedToken = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
-
-      console.log('AuthContext: storedToken:', storedToken ? 'exists' : 'null');
-      console.log('AuthContext: storedUser:', storedUser);
 
       if (storedToken && storedUser && storedUser !== 'undefined') {
         const parsedUser = JSON.parse(storedUser);
         setToken(storedToken);
         setUser(parsedUser);
-        console.log('AuthContext: User loaded:', parsedUser);
-        console.log('AuthContext: User roleId:', parsedUser.roleId);
-      } else {
-        console.log('AuthContext: No valid auth data found');
       }
-    } catch (error) {
-      console.error('AuthContext: Error loading auth data:', error);
+    } catch {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
     } finally {
       setIsLoading(false);
-      console.log('AuthContext: Loading complete');
     }
   }, []);
 
   const handleAuthSuccess = (authData: AuthResponse) => {
-    console.log('[AuthContext] handleAuthSuccess - authData:', authData);
-    console.log('[AuthContext] user roleId:', authData.user?.roleId);
     localStorage.setItem('token', authData.token);
     localStorage.setItem('user', JSON.stringify(authData.user));
     setToken(authData.token);
@@ -68,7 +61,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     return authData;
   };
 
-  const register = async (email: string, password: string, username?: string, fullName?: string) => {
+  const register = async (
+    email: string,
+    password: string,
+    username?: string,
+    fullName?: string
+  ) => {
     await authService.register({ email, password, username, fullName });
   };
 

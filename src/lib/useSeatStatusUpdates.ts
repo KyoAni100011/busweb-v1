@@ -54,7 +54,6 @@ export const useSeatStatusUpdates = ({
           onUpdate(statuses);
         }
       } catch (error) {
-        console.error('Seat status update failed', error);
       } finally {
         isFetchingRef.current = false;
         if (!isCancelled) {

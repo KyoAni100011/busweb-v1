@@ -1,3 +1,5 @@
+import { string } from 'zod';
+
 export interface Route {
   id: string;
   name: string;
@@ -197,6 +199,18 @@ export interface PassengerFormValue {
 }
 
 export interface BookingContactDetails {
+  fullName: string;
+  phone: string;
+  email: string;
+}
+
+export interface BookingPayload {
+  tripId: string;
+  seatCode: string;
+  paymentProvider: string;
+}
+
+export interface GuestBookingPayload extends BookingPayload {
   fullName: string;
   phone: string;
   email: string;

@@ -1,22 +1,13 @@
 import api from '@/lib/api';
 import type {
-  BookingConfirmation,
-  BookingContactDetails,
   BookingHistoryItem,
+  BookingPayload,
   BookingQuote,
+  GuestBookingPayload,
   GuestLookupRequest,
   GuestLookupResponse,
   PassengerFormValue,
 } from '@/types';
-
-interface CreateBookingPayload {
-  tripId: string;
-  seats: string[];
-  passengers: PassengerFormValue[];
-  contact: BookingContactDetails;
-  isGuest?: boolean;
-  holdToken?: string;
-}
 
 interface PrepareQuotePayload {
   tripId: string;
@@ -26,13 +17,22 @@ interface PrepareQuotePayload {
 
 export const bookingService = {
   async prepareQuote(payload: PrepareQuotePayload): Promise<BookingQuote> {
-    const response = await api.post<BookingQuote>('/public/bookings/quote', payload);
+    const response = await api.post<BookingQuote>(
+      '/public/bookings/quote',
+      payload
+    );
 
     return response.data;
   },
 
-  async createBooking(payload: CreateBookingPayload): Promise<BookingConfirmation> {
-    const response = await api.post<BookingConfirmation>('/public/bookings', payload);
+  async createBooking(payload: BookingPayload): Promise<any> {
+    const response = await api.post<any>('/bookings', payload);
+
+    return response.data;
+  },
+
+  async createGuestBooking(payload: GuestBookingPayload): Promise<any> {
+    const response = await api.post<any>('/bookings/guest', payload);
 
     return response.data;
   },
@@ -43,8 +43,22 @@ export const bookingService = {
     return response.data;
   },
 
-  async lookupGuestBooking(payload: GuestLookupRequest): Promise<GuestLookupResponse> {
-    const response = await api.post<GuestLookupResponse>('/public/bookings/lookup', payload);
+  async checkPaymentStatus(
+    sessionId: string
+  ): Promise<{ status: 'PAID' | 'FAILED' | 'PENDING' }> {
+    const response = await api.get(`/payments/stripe/status`, {
+      params: { sessionId },
+    });
+    return response.data;
+  },
+
+  async lookupGuestBooking(
+    payload: GuestLookupRequest
+  ): Promise<GuestLookupResponse> {
+    const response = await api.post<GuestLookupResponse>(
+      '/public/bookings/lookup',
+      payload
+    );
 
     return response.data;
   },
