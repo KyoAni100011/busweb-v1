@@ -19,4 +19,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: ['dom-to-image-more'],
+  },
 });
