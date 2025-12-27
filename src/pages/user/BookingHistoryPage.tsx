@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { bookingService } from '@/services/booking.service';
 import type { BookingHistoryItem } from '@/types';
@@ -15,23 +15,25 @@ export const BookingHistoryPage: React.FC = () => {
   const [status, setStatus] = useState<StatusFilter>('ALL');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [actionId, setActionId] = useState<string | null>(null);
+
+  const loadHistory = useCallback(async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const response = await bookingService.getBookingHistory();
+      setBookings(response);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load booking history');
+    } finally {
+      setIsLoading(false);
+      setActionId(null);
+    }
+  }, []);
 
   useEffect(() => {
-    const loadHistory = async () => {
-      setIsLoading(true);
-      setError('');
-      try {
-        const response = await bookingService.getBookingHistory();
-        setBookings(response);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load booking history');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     loadHistory();
-  }, []);
+  }, [loadHistory]);
 
   const filtered = useMemo(() => {
     if (status === 'ALL') {
@@ -52,6 +54,30 @@ export const BookingHistoryPage: React.FC = () => {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to download ticket');
+    }
+  };
+
+  const handleCancel = async (bookingId: string) => {
+    setActionId(bookingId);
+    try {
+      await bookingService.cancelBooking(bookingId);
+      await loadHistory();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to cancel booking');
+      setActionId(null);
+    }
+  };
+
+  const handleUpdateSeat = async (bookingId: string) => {
+    const seatCode = window.prompt('Enter new seat code');
+    if (!seatCode) return;
+    setActionId(bookingId);
+    try {
+      await bookingService.updateSeat(bookingId, seatCode.trim());
+      await loadHistory();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to update seat');
+      setActionId(null);
     }
   };
 
@@ -112,6 +138,12 @@ export const BookingHistoryPage: React.FC = () => {
                   <div className="mt-3 flex flex-wrap justify-end gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleDownloadTicket(booking.bookingId, booking.referenceCode)}>
                       Download ticket
+                    </Button>
+                    <Button variant="ghost" size="sm" disabled={actionId === booking.bookingId} onClick={() => handleUpdateSeat(booking.bookingId)}>
+                      {actionId === booking.bookingId ? 'Updating…' : 'Change seat'}
+                    </Button>
+                    <Button variant="destructive" size="sm" disabled={actionId === booking.bookingId} onClick={() => handleCancel(booking.bookingId)}>
+                      {actionId === booking.bookingId ? 'Cancelling…' : 'Cancel'}
                     </Button>
                   </div>
                 </div>

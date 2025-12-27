@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,8 @@ import {
   Search,
   LogOut,
   Home,
+  Menu,
+  X,
 } from 'lucide-react';
 
 const navigation = [
@@ -26,16 +28,35 @@ export const UserLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  const [isNavOpen, setIsNavOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+    setIsNavOpen(false);
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <aside className="flex w-64 flex-col border-r bg-white">
-        <div className="flex h-16 items-center border-b px-6">
+    <div className="flex min-h-screen bg-gray-50">
+      <div className="fixed left-0 top-0 z-40 flex h-16 w-full items-center justify-between border-b bg-white px-4 md:hidden">
+        <Link to="/" className="text-lg font-semibold text-primary" onClick={() => setIsNavOpen(false)}>
+          tempProject
+        </Link>
+        <Button variant="ghost" size="icon" onClick={() => setIsNavOpen((prev) => !prev)}>
+          {isNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </Button>
+      </div>
+
+      {isNavOpen && (
+        <div className="fixed inset-0 z-30 bg-black/30 md:hidden" onClick={() => setIsNavOpen(false)} />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r bg-white transition-transform duration-200 md:static md:translate-x-0 ${
+          isNavOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="hidden h-16 items-center border-b px-6 md:flex">
           <Link to="/" className="text-xl font-bold text-primary">
             tempProject
           </Link>
@@ -53,6 +74,7 @@ export const UserLayout: React.FC = () => {
               <Link
                 key={item.name}
                 to={item.href}
+                onClick={() => setIsNavOpen(false)}
                 className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                   isActive
                     ? 'bg-primary/10 text-primary'
@@ -77,6 +99,7 @@ export const UserLayout: React.FC = () => {
               <Link
                 key={item.name}
                 to={item.href}
+                onClick={() => setIsNavOpen(false)}
                 className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
               >
                 <Icon className="h-5 w-5" />
@@ -109,7 +132,7 @@ export const UserLayout: React.FC = () => {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pt-16 md:pt-0">
         <Outlet />
       </main>
     </div>

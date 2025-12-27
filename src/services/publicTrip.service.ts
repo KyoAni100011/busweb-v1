@@ -35,7 +35,7 @@ const mapTripSummary = (trip: any): TripSummary => {
     arrivalTime: arrivalDate ? arrivalDate.toISOString() : '',
     durationMinutes,
     price: trip.base_price ?? trip.price ?? 0,
-    currency: trip.currency ?? 'USD',
+    currency: trip.currency ?? 'VND',
     busType: bus.bus_type ?? bus.busType ?? trip.busType ?? 'Bus',
     availableSeats: trip.availableSeats ?? bus.total_seats ?? 0,
     amenities,
@@ -178,8 +178,8 @@ export const publicTripService = {
           : 'AVAILABLE';
 
       const priceFactor = seat.price_factor ?? 1;
-      const price = (seat.price ?? seat.cost ?? seat.amount ?? seat.rate ?? tripResponse.data.basePrice ?? 0) * priceFactor;
-      const currency = seat.currency ?? seat.curr ?? seat.isoCurrency ?? tripResponse.data.currency ?? 'USD';
+      const price = (seat.price ?? seat.cost ?? seat.amount ?? seat.rate ?? tripResponse.data.basePrice ?? (tripResponse.data as any)?.base_price ?? 0) * priceFactor;
+      const currency = seat.currency ?? seat.curr ?? seat.isoCurrency ?? tripResponse.data.currency ?? 'VND';
       const seatType = seat.type ?? seat.seat_type ?? 'STANDARD';
 
       return {

@@ -114,7 +114,27 @@ export const SeatSelectionPage: React.FC = () => {
 
         setAlertMessage('');
       } catch (e: any) {
-        setAlertMessage(e.message || 'Failed to update seat');
+        const statusCode = e?.response?.status;
+        if (statusCode === 409) {
+          setSeatMap((current) => {
+            if (!current) return current;
+
+            return {
+              ...current,
+              seats: current.seats.map((s) =>
+                s.id === seat.id ? { ...s, status: 'BOOKED' } : s
+              ),
+              refreshedAt: new Date().toISOString(),
+            };
+          });
+
+          setSelectedSeat((prev) =>
+            prev?.id === seat.id ? null : prev
+          );
+          setAlertMessage('Seat has just been booked by someone else');
+        } else {
+          setAlertMessage(e.message || 'Failed to update seat');
+        }
       } finally {
         setIsHolding(false);
       }
@@ -146,18 +166,49 @@ export const SeatSelectionPage: React.FC = () => {
       .padStart(2, '0')}`;
   }, [holdExpiresAt, now]);
 
-  const applySeatStatuses = useCallback((statuses: SeatMapSeat[]) => {
-    setSeatMap((current) => {
-      if (!current) return current;
+  const applySeatStatuses = useCallback(
+    (statuses: SeatMapSeat[]) => {
+      if (!statuses) {
+        return;
+      }
 
-      const map = new Map(statuses.map((s) => [s.id, s]));
-      return {
-        ...current,
-        seats: current.seats.map((s) => map.get(s.id) ?? s),
-        refreshedAt: new Date().toISOString(),
+      const availability = new Set(
+        statuses
+          .flatMap((seat) => [seat.id, seat.seatNumber])
+          .filter(Boolean)
+          .map((value) => value.toString().trim().toLowerCase())
+      );
+
+      const isAvailable = (seat: SeatMapSeat) => {
+        const id = seat.id?.toString().trim().toLowerCase() ?? '';
+        const code = seat.seatNumber?.toString().trim().toLowerCase() ?? '';
+        return availability.has(id) || availability.has(code);
       };
-    });
-  }, []);
+
+      setSeatMap((current) => {
+        if (!current) return current;
+
+        const refreshedAt = new Date().toISOString();
+
+        return {
+          ...current,
+          seats: current.seats.map((seat) => {
+            const available = isAvailable(seat);
+            const isSelected = selectedSeat?.id === seat.id;
+            const nextStatus: SeatMapSeat['status'] = available || isSelected
+              ? 'AVAILABLE'
+              : seat.status === 'HELD'
+                ? 'HELD'
+                : 'BOOKED';
+
+            return { ...seat, status: nextStatus };
+          }),
+          refreshedAt,
+        };
+      });
+    },
+    [selectedSeat]
+  );
 
   useSeatStatusUpdates({
     tripId,

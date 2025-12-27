@@ -45,7 +45,7 @@ export const bookingService = {
 
   async checkPaymentStatus(
     sessionId: string
-  ): Promise<{ status: 'PAID' | 'FAILED' | 'PENDING' }> {
+  ): Promise<{ status: 'PAID' | 'FAILED' | 'PENDING'; booking?: any }> {
     const response = await api.get(`/payments/stripe/status`, {
       params: { sessionId },
     });
@@ -69,5 +69,13 @@ export const bookingService = {
     });
 
     return response.data as Blob;
+  },
+
+  async cancelBooking(bookingId: string): Promise<void> {
+    await api.post(`/user/booking/${bookingId}/cancel`);
+  },
+
+  async updateSeat(bookingId: string, seatCode: string): Promise<void> {
+    await api.patch(`/user/booking/${bookingId}/seats`, { seatCode });
   },
 };
