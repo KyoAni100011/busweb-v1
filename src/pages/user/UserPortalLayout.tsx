@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import { BookingProvider } from '@/contexts/BookingContext';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { AiAssistantWidget } from '@/components/chat/AiAssistantWidget';
 
 const navLinks = [
   { label: 'Search Trips', to: '/' },
@@ -80,6 +81,7 @@ export const UserPortalLayout: React.FC = () => {
             </div>
           </div>
         </footer>
+        <AiAssistantWidget />
       </div>
     </BookingProvider>
   );
