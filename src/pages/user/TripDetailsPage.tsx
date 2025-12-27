@@ -152,7 +152,7 @@ export const TripDetailsPage: React.FC = () => {
           </div>
           <div>
             <h3 className="text-sm font-medium text-gray-900">Support</h3>
-            <p className="mt-2 text-sm text-muted-foreground">Need help? Call our hotline at 1900-1234 or email support@bustickets.vn.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Need help? Call our hotline at 1900-1234 or email support@tempProject.vn.</p>
           </div>
         </div>
       </div>

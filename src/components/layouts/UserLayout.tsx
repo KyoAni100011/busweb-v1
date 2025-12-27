@@ -37,7 +37,7 @@ export const UserLayout: React.FC = () => {
       <aside className="flex w-64 flex-col border-r bg-white">
         <div className="flex h-16 items-center border-b px-6">
           <Link to="/" className="text-xl font-bold text-primary">
-            BusTickets.vn
+            tempProject
           </Link>
         </div>
 

@@ -28,7 +28,7 @@ export const UserPortalLayout: React.FC = () => {
         <header className="border-b bg-white">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
             <Link to="/" className="text-xl font-bold text-primary">
-              BusTickets.vn
+              tempProject
             </Link>
             <nav className="hidden gap-6 md:flex">
               {links.map((item) => (
@@ -72,7 +72,7 @@ export const UserPortalLayout: React.FC = () => {
         </main>
         <footer className="border-t bg-white">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-4 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-            <span>© {new Date().getFullYear()} BusTickets.vn. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} tempProject. All rights reserved.</span>
             <div className="flex gap-4">
               <Link to="#" className="hover:text-primary">Privacy Policy</Link>
               <Link to="#" className="hover:text-primary">Terms of Service</Link>

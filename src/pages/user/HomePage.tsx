@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CityAutocomplete } from '@/components/user/CityAutocomplete';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { CitySuggestion } from '@/types';
@@ -15,19 +14,53 @@ export const HomePage: React.FC = () => {
   const [destination, setDestination] = useState<CitySuggestion | null>(null);
   const [travelDate, setTravelDate] = useState<string>('');
   const [passengers, setPassengers] = useState<number>(1);
+  const [cityOptions, setCityOptions] = useState<CitySuggestion[]>([]);
   const [popularOrigins, setPopularOrigins] = useState<CitySuggestion[]>([]);
+  const [isLoadingCities, setIsLoadingCities] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
+    setIsLoadingCities(true);
     locationService
-      .getPopularCities(6)
-      .then(setPopularOrigins)
-      .catch(() => setPopularOrigins([]));
+      .getPopularCities(24)
+      .then((cities) => {
+        setCityOptions(cities);
+        setPopularOrigins(cities.slice(0, 6));
+      })
+      .catch(() => {
+        setCityOptions([]);
+        setPopularOrigins([]);
+      })
+      .finally(() => setIsLoadingCities(false));
   }, []);
 
   const swapLocations = () => {
     setOrigin(destination);
     setDestination(origin);
+  };
+
+  const formattedCities = useMemo(
+    () => cityOptions.map((city) => ({
+      ...city,
+      label: city.region ? `${city.name}, ${city.region}` : city.country ? `${city.name}, ${city.country}` : city.name,
+    })),
+    [cityOptions]
+  );
+
+  const handleOriginChange = (cityId: string) => {
+    const city = formattedCities.find((item) => item.id === cityId) || null;
+    setOrigin(city);
+    if (city && destination && destination.id === city.id) {
+      setDestination(null);
+    }
+  };
+
+  const handleDestinationChange = (cityId: string) => {
+    const city = formattedCities.find((item) => item.id === cityId) || null;
+    setDestination(city);
+    if (city && origin && origin.id === city.id) {
+      setOrigin(null);
+    }
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -67,18 +100,52 @@ export const HomePage: React.FC = () => {
             <div className="rounded-lg bg-white/80 p-6 shadow-sm backdrop-blur">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <CityAutocomplete
-                    value={origin}
-                    onSelect={setOrigin}
-                    label="From"
-                    placeholder="Select origin city"
-                  />
-                  <CityAutocomplete
-                    value={destination}
-                    onSelect={setDestination}
-                    label="To"
-                    placeholder="Select destination city"
-                  />
+                  <div>
+                    <label className="mb-2 block text-sm text-muted-foreground" htmlFor="origin-select">
+                      From
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="origin-select"
+                        className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        value={origin?.id || ''}
+                        onChange={(event) => handleOriginChange(event.target.value)}
+                        disabled={isLoadingCities}
+                      >
+                        <option value="" disabled>
+                          {isLoadingCities ? 'Loading cities...' : 'Select origin city'}
+                        </option>
+                        {formattedCities.map((city) => (
+                          <option key={city.id} value={city.id}>
+                            {city.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-sm text-muted-foreground" htmlFor="destination-select">
+                      To
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="destination-select"
+                        className="w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        value={destination?.id || ''}
+                        onChange={(event) => handleDestinationChange(event.target.value)}
+                        disabled={isLoadingCities}
+                      >
+                        <option value="" disabled>
+                          {isLoadingCities ? 'Loading cities...' : 'Select destination city'}
+                        </option>
+                        {formattedCities.map((city) => (
+                          <option key={city.id} value={city.id}>
+                            {city.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
                 <div className="grid gap-4 md:grid-cols-[1fr_auto]">
                   <div className="grid gap-4 md:grid-cols-2">
@@ -148,7 +215,7 @@ export const HomePage: React.FC = () => {
               ))}
             </div>
             <p className="text-sm text-muted-foreground">
-              Select an origin city or start typing to see more options. Destinations are filtered once you begin searching.
+              Pick an origin from the dropdown to get started. Destinations unlock once you choose a different city.
             </p>
           </div>
         </div>
