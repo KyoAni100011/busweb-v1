@@ -91,12 +91,30 @@ const BookingCard: React.FC<{
   booking: BookingHistoryItem;
   onDownloadTicket: (bookingId: string) => void;
   onCancel: (bookingId: string) => void;
-  onChangeSeat: (bookingId: string) => void;
+  onStartSeatEdit: (bookingId: string, seats: string[]) => void;
+  onSaveSeat: (bookingId: string) => void;
+  onSeatDraftChange: (value: string) => void;
+  onCancelSeatEdit: () => void;
   isDownloading: boolean;
   isWorking: boolean;
-}> = ({ booking, onDownloadTicket, onCancel, onChangeSeat, isDownloading, isWorking }) => {
+  seatEditId: string | null;
+  seatDraft: string;
+}> = ({
+  booking,
+  onDownloadTicket,
+  onCancel,
+  onStartSeatEdit,
+  onSaveSeat,
+  onSeatDraftChange,
+  onCancelSeatEdit,
+  isDownloading,
+  isWorking,
+  seatEditId,
+  seatDraft,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isPast = new Date(booking.trip.departureTime) < new Date();
+  const isEditingSeat = seatEditId === booking.bookingId;
 
   return (
     <Card className="overflow-hidden">
@@ -194,34 +212,65 @@ const BookingCard: React.FC<{
             <div>
               <h4 className="mb-3 text-sm font-semibold text-gray-700">Actions</h4>
               <div className="space-y-2">
-                {booking.status === 'CONFIRMED' && (
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDownloadTicket(booking.bookingId);
-                    }}
-                    disabled={isDownloading}
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    {isDownloading ? 'Downloading...' : 'Download Ticket'}
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDownloadTicket(booking.bookingId);
+                  }}
+                  disabled={isDownloading}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  {isDownloading ? 'Downloading...' : 'Download Ticket'}
+                </Button>
 
-                {booking.status !== 'CANCELLED' && (
+                {booking.status === 'CONFIRMED' && (
                   <>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start"
-                      disabled={isWorking}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onChangeSeat(booking.bookingId);
-                      }}
-                    >
-                      Change Seat
-                    </Button>
+                    {isEditingSeat ? (
+                      <div className="space-y-2">
+                        <Input
+                          value={seatDraft}
+                          placeholder="Seat code"
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => onSeatDraftChange(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            className="flex-1"
+                            disabled={isWorking}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSaveSeat(booking.bookingId);
+                            }}
+                          >
+                            {isWorking ? 'Saving…' : 'Save Seat'}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="flex-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onCancelSeatEdit();
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start"
+                        disabled={isWorking}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onStartSeatEdit(booking.bookingId, booking.seats);
+                        }}
+                      >
+                        Change Seat
+                      </Button>
+                    )}
                     <Button
                       variant="destructive"
                       className="w-full justify-start"
@@ -253,6 +302,8 @@ export const UserBookingsPage: React.FC = () => {
   const [sortOption, setSortOption] = useState<SortOption>('DATE_DESC');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [actionId, setActionId] = useState<string | null>(null);
+  const [seatEditId, setSeatEditId] = useState<string | null>(null);
+  const [seatDraft, setSeatDraft] = useState('');
 
   const fetchBookings = useCallback(async (showLoader = false) => {
     try {
@@ -308,15 +359,30 @@ export const UserBookingsPage: React.FC = () => {
     }
   };
 
-  const handleChangeSeat = async (bookingId: string) => {
-    const seatCode = window.prompt('Enter new seat code');
+  const startSeatEdit = (bookingId: string, seats: string[]) => {
+    setSeatEditId(bookingId);
+    setSeatDraft(seats[0] ?? '');
+  };
 
+  const handleSeatDraftChange = (value: string) => {
+    setSeatDraft(value);
+  };
+
+  const cancelSeatEdit = () => {
+    setSeatEditId(null);
+    setSeatDraft('');
+    setActionId(null);
+  };
+
+  const handleSaveSeat = async (bookingId: string) => {
+    const seatCode = seatDraft.trim();
     if (!seatCode) return;
 
     setActionId(bookingId);
     try {
-      await bookingService.updateSeat(bookingId, seatCode.trim());
+      await bookingService.updateSeat(bookingId, seatCode);
       await fetchBookings();
+      cancelSeatEdit();
     } catch (err) {
       console.error('Failed to change seat:', err);
       setActionId(null);
@@ -403,9 +469,14 @@ export const UserBookingsPage: React.FC = () => {
               booking={booking}
               onDownloadTicket={handleDownloadTicket}
               onCancel={handleCancel}
-              onChangeSeat={handleChangeSeat}
+              onStartSeatEdit={startSeatEdit}
+              onSaveSeat={handleSaveSeat}
+              onSeatDraftChange={handleSeatDraftChange}
+              onCancelSeatEdit={cancelSeatEdit}
               isDownloading={downloadingId === booking.bookingId}
               isWorking={actionId === booking.bookingId}
+              seatEditId={seatEditId}
+              seatDraft={seatDraft}
             />
           ))}
         </div>
