@@ -29,6 +29,7 @@ import {
 } from 'react-router-dom';
 import { PaymentSuccess } from '@/pages/payment/PaymentSuccess';
 import PaymentCancel from '@/pages/payment/PaymentCancel';
+import { GoogleSuccess } from '@/pages/auth/google/success';
 
 const RouteError: React.FC = () => {
   const error = useRouteError();
@@ -108,6 +109,11 @@ const router = createBrowserRouter([
         element: <PaymentCancel />,
       },
     ],
+  },
+  {
+    path: '/auth/google/success',
+    element: <GoogleSuccess />,
+    errorElement: <RouteError />,
   },
   {
     path: '/login',

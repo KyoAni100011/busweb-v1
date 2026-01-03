@@ -8,6 +8,9 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<AuthResponse>;
+  getMyProfile: (token: string) => Promise<AuthResponse>;
+  loginWithGoogle: () => Promise<void>;
+  handleAuthSuccess: (authData: AuthResponse) => void;
   register: (
     email: string,
     password: string,
@@ -57,8 +60,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string) => {
     const authData = await authService.login({ email, password });
     handleAuthSuccess(authData);
-
     return authData;
+  };
+
+  const getMyProfile = async (token: string) => {
+    const authData = await authService.getMyProfile(token);
+    handleAuthSuccess(authData);
+    return authData;
+  };
+
+  const loginWithGoogle = async () => {
+    try {
+      await authService.loginWithGoogle();
+    } catch (err) {
+      console.error('[AuthContext] Google login failed', err);
+      throw err;
+    }
   };
 
   const register = async (
@@ -76,12 +93,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setToken(null);
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     token,
     login,
     register,
     logout,
+    loginWithGoogle,
+    handleAuthSuccess,
+    getMyProfile,
     isAuthenticated: !!token,
     isAdmin: isAdminRole(user),
     isLoading,
@@ -92,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

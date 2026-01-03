@@ -39,7 +39,6 @@ const isRecord = (value: unknown): value is UnknownRecord => {
 
 const toRecord = (value: unknown): UnknownRecord | null => {
   if (!isRecord(value)) {
-
     return null;
   }
 
@@ -48,17 +47,18 @@ const toRecord = (value: unknown): UnknownRecord | null => {
 
 const toStringOrNull = (value: unknown): string | null => {
   if (value === null || value === undefined) {
-
     return null;
   }
 
   if (typeof value === 'string') {
-
     return value;
   }
 
-  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-
+  if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
     return String(value);
   }
 
@@ -68,17 +68,17 @@ const toStringOrNull = (value: unknown): string | null => {
 const gatherRecords = (value: unknown, depth = 0): UnknownRecord[] => {
   const record = toRecord(value);
   if (!record) {
-
     return [];
   }
 
   if (depth > 4) {
-
     return [record];
   }
 
   const nestedKeys = ['data', 'result', 'payload', 'attributes'];
-  const nested = nestedKeys.flatMap((key) => gatherRecords(record[key], depth + 1));
+  const nested = nestedKeys.flatMap((key) =>
+    gatherRecords(record[key], depth + 1)
+  );
 
   return [record, ...nested];
 };
@@ -87,12 +87,16 @@ const decodeJwtPayload = (token: string): UnknownRecord => {
   try {
     const [, payloadSegment] = token.split('.');
     if (!payloadSegment) {
-
       return {};
     }
 
-    const normalizedPayload = payloadSegment.replace(/-/g, '+').replace(/_/g, '/');
-    const padding = normalizedPayload.length % 4 === 0 ? '' : '='.repeat(4 - (normalizedPayload.length % 4));
+    const normalizedPayload = payloadSegment
+      .replace(/-/g, '+')
+      .replace(/_/g, '/');
+    const padding =
+      normalizedPayload.length % 4 === 0
+        ? ''
+        : '='.repeat(4 - (normalizedPayload.length % 4));
     const base64 = `${normalizedPayload}${padding}`;
     const json = atob(base64);
     const decoded = decodeURIComponent(
@@ -116,7 +120,6 @@ const resolveToken = (records: UnknownRecord[]): string | null => {
     for (const key of tokenKeys) {
       const token = toStringOrNull(record[key]);
       if (token) {
-
         return token;
       }
     }
@@ -132,7 +135,6 @@ const resolveRefreshToken = (records: UnknownRecord[]): string | null => {
     for (const key of refreshKeys) {
       const refreshToken = toStringOrNull(record[key]);
       if (refreshToken) {
-
         return refreshToken;
       }
     }
@@ -148,7 +150,6 @@ const resolveUserRecord = (records: UnknownRecord[]): UnknownRecord | null => {
     for (const key of userKeys) {
       const candidate = toRecord(record[key]);
       if (candidate) {
-
         return candidate;
       }
     }
@@ -199,7 +200,9 @@ const normalizeAuthResponse = (payload: unknown): AuthResponse => {
     toStringOrNull(jwtPayload.role) ??
     null;
 
-  const roleValue = (userRecord.role ?? jwtPayload.role ?? null) as AuthUser['role'];
+  const roleValue = (userRecord.role ??
+    jwtPayload.role ??
+    null) as AuthUser['role'];
 
   const rolesValue =
     (userRecord.roles as AuthUser['roles']) ??
@@ -239,7 +242,9 @@ const normalizeAuthResponse = (payload: unknown): AuthResponse => {
   };
 
   if (!user.email) {
-    console.warn('[auth.service] Email missing from auth response, downstream components may rely on it.');
+    console.warn(
+      '[auth.service] Email missing from auth response, downstream components may rely on it.'
+    );
   }
 
   return {
@@ -275,9 +280,18 @@ export const authService = {
     return response.data as RegisterResponse;
   },
 
-  getGoogleAuthUrl(): string {
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    return `${baseUrl}/auth/google`;
+  loginWithGoogle: async () => {
+    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+    return new Promise(() => {});
+  },
+
+  getMyProfile: async (token: string): Promise<any> => {
+    const response = await api.get('/auth/me', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return normalizeAuthResponse(response.data);
   },
 
   logout(): void {

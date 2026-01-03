@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { GoogleIcon } from '@/core/icons/google';
 import { useAuth } from '@/contexts/AuthContext';
-import { authService } from '@/services/auth.service';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -24,7 +23,7 @@ import { Link } from 'react-router-dom';
 
 export function LoginForm() {
   const form = useZodForm(SignInSchema);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,22 +32,42 @@ export function LoginForm() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       console.log('[LoginForm] Starting login...');
       const authData = await login(data.email, data.password);
       console.log('[LoginForm] Login successful, navigating...');
 
-      const isAdmin = authData.user?.role === 'ADMIN' || authData.user?.roles?.includes?.('ADMIN');
+      const isAdmin =
+        authData.user?.role === 'ADMIN' ||
+        (Array.isArray(authData.user?.roles) &&
+          authData.user.roles.some((r) =>
+            typeof r === 'string' ? r === 'ADMIN' : r?.name === 'ADMIN'
+          ));
+
       navigate(isAdmin ? '/admin' : '/', { replace: true });
     } catch (err: any) {
       console.error('[LoginForm] Login error:', err);
-      setError(err.response?.data?.message || err.message || 'Login failed. Please try again.');
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          'Login failed. Please try again.'
+      );
       setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = () => {
-    window.location.href = authService.getGoogleAuthUrl();
+  const handleGoogleLogin = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      await loginWithGoogle();
+    } catch (err: any) {
+      console.error('[LoginForm] Google login error:', err);
+      setError(err.message || 'Google login failed');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
