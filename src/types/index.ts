@@ -110,6 +110,8 @@ export interface TripSearchQuery {
   destinationCityId: string;
   travelDate: string;
   passengers?: number;
+  originName?: string;
+  destinationName?: string;
 }
 
 export interface TripSearchFilters {

@@ -18,6 +18,8 @@ const parseQueryParams = (params: URLSearchParams): TripSearchQuery | null => {
   const originCityId = params.get('originCityId');
   const destinationCityId = params.get('destinationCityId');
   const travelDate = params.get('travelDate');
+  const originName = params.get('origin') ?? undefined;
+  const destinationName = params.get('destination') ?? undefined;
 
   if (!originCityId || !destinationCityId || !travelDate) {
     return null;
@@ -31,6 +33,8 @@ const parseQueryParams = (params: URLSearchParams): TripSearchQuery | null => {
     destinationCityId,
     travelDate,
     passengers: passengers && !Number.isNaN(passengers) ? passengers : undefined,
+    originName,
+    destinationName,
   };
 };
 
@@ -144,8 +148,8 @@ export const SearchResultsPage: React.FC = () => {
     }
 
     const details: string[] = [];
-    const originLabel = originCity?.name ?? fallbackTrip?.originCity;
-    const destinationLabel = destinationCity?.name ?? fallbackTrip?.destinationCity;
+    const originLabel = originCity?.name ?? query.originName ?? fallbackTrip?.originCity;
+    const destinationLabel = destinationCity?.name ?? query.destinationName ?? fallbackTrip?.destinationCity;
 
     if (originLabel && destinationLabel) {
       details.push(`${originLabel} → ${destinationLabel}`);

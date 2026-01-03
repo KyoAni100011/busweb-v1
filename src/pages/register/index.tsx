@@ -93,6 +93,7 @@ const RegisterPage: React.FC = () => {
                   <FormControl>
                     <Input type="password" placeholder="********" {...field} />
                   </FormControl>
+                  <p className="text-xs text-muted-foreground">Must be 8+ chars, include 1 uppercase, 1 number, 1 special character.</p>
                   <FormMessage />
                 </FormItem>
               )}

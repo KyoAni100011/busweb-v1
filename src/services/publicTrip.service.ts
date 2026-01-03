@@ -44,8 +44,8 @@ const mapTripSummary = (trip: any): TripSummary => {
 
 const buildSearchParams = (query: TripSearchQuery, filters?: TripSearchFilters) => {
   const params: Record<string, string | number | undefined> = {
-    originCityId: query.originCityId,
-    destinationCityId: query.destinationCityId,
+    origin: query.originName,
+    destination: query.destinationName,
     travelDate: query.travelDate,
   };
 
@@ -63,10 +63,10 @@ const buildSearchParams = (query: TripSearchQuery, filters?: TripSearchFilters) 
     }
   };
 
-  assignIfDefined('departureStart', filters.departureStart);
-  assignIfDefined('departureEnd', filters.departureEnd);
-  assignIfDefined('minPrice', filters.minPrice);
-  assignIfDefined('maxPrice', filters.maxPrice);
+  assignIfDefined('from_time', filters.departureStart);
+  assignIfDefined('to_time', filters.departureEnd);
+  assignIfDefined('min_price', filters.minPrice);
+  assignIfDefined('max_price', filters.maxPrice);
   assignIfDefined('sortBy', filters.sortBy);
   assignIfDefined('sortOrder', filters.sortOrder);
   assignIfDefined('page', filters.page);

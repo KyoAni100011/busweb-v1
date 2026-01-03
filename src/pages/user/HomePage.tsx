@@ -47,6 +47,11 @@ export const HomePage: React.FC = () => {
     [cityOptions]
   );
 
+  const destinationOptions = useMemo(() => {
+    if (!origin) return formattedCities;
+    return formattedCities.filter((city) => city.id !== origin.id);
+  }, [formattedCities, origin]);
+
   const handleOriginChange = (cityId: string) => {
     const city = formattedCities.find((item) => item.id === cityId) || null;
     setOrigin(city);
@@ -82,6 +87,8 @@ export const HomePage: React.FC = () => {
       search: new URLSearchParams({
         originCityId: origin.id,
         destinationCityId: destination.id,
+        origin: origin.name,
+        destination: destination.name,
         travelDate,
         passengers: String(passengers),
       }).toString(),
@@ -138,7 +145,7 @@ export const HomePage: React.FC = () => {
                         <option value="" disabled>
                           {isLoadingCities ? 'Loading cities...' : 'Select destination city'}
                         </option>
-                        {formattedCities.map((city) => (
+                        {destinationOptions.map((city) => (
                           <option key={city.id} value={city.id}>
                             {city.label}
                           </option>
