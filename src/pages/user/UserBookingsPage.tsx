@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { bookingService } from '@/services/booking.service';
 import { Card, CardContent } from '@/components/ui/card';
@@ -90,8 +90,11 @@ const sortBookings = (
 const BookingCard: React.FC<{
   booking: BookingHistoryItem;
   onDownloadTicket: (bookingId: string) => void;
+  onCancel: (bookingId: string) => void;
+  onChangeSeat: (bookingId: string) => void;
   isDownloading: boolean;
-}> = ({ booking, onDownloadTicket, isDownloading }) => {
+  isWorking: boolean;
+}> = ({ booking, onDownloadTicket, onCancel, onChangeSeat, isDownloading, isWorking }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isPast = new Date(booking.trip.departureTime) < new Date();
 
@@ -205,6 +208,33 @@ const BookingCard: React.FC<{
                     {isDownloading ? 'Downloading...' : 'Download Ticket'}
                   </Button>
                 )}
+
+                {booking.status !== 'CANCELLED' && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      disabled={isWorking}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onChangeSeat(booking.bookingId);
+                      }}
+                    >
+                      Change Seat
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="w-full justify-start"
+                      disabled={isWorking}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCancel(booking.bookingId);
+                      }}
+                    >
+                      Cancel Booking
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -222,23 +252,29 @@ export const UserBookingsPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('ALL');
   const [sortOption, setSortOption] = useState<SortOption>('DATE_DESC');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [actionId, setActionId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
+  const fetchBookings = useCallback(async (showLoader = false) => {
+    try {
+      if (showLoader) {
         setIsLoading(true);
-        const data = await bookingService.getBookingHistory();
-        setBookings(data);
-      } catch (err) {
-        setError('Failed to load your bookings. Please try again.');
-        console.error(err);
-      } finally {
+      }
+      const data = await bookingService.getBookingHistory();
+      setBookings(data);
+    } catch (err) {
+      setError('Failed to load your bookings. Please try again.');
+      console.error(err);
+    } finally {
+      if (showLoader) {
         setIsLoading(false);
       }
-    };
-
-    fetchBookings();
+      setActionId(null);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchBookings(true);
+  }, [fetchBookings]);
 
   const handleDownloadTicket = async (bookingId: string) => {
     try {
@@ -256,6 +292,34 @@ export const UserBookingsPage: React.FC = () => {
       console.error('Failed to download ticket:', err);
     } finally {
       setDownloadingId(null);
+    }
+  };
+
+  const handleCancel = async (bookingId: string) => {
+    if (!window.confirm('Cancel this booking?')) return;
+
+    setActionId(bookingId);
+    try {
+      await bookingService.cancelBooking(bookingId);
+      await fetchBookings();
+    } catch (err) {
+      console.error('Failed to cancel booking:', err);
+      setActionId(null);
+    }
+  };
+
+  const handleChangeSeat = async (bookingId: string) => {
+    const seatCode = window.prompt('Enter new seat code');
+
+    if (!seatCode) return;
+
+    setActionId(bookingId);
+    try {
+      await bookingService.updateSeat(bookingId, seatCode.trim());
+      await fetchBookings();
+    } catch (err) {
+      console.error('Failed to change seat:', err);
+      setActionId(null);
     }
   };
 
@@ -338,7 +402,10 @@ export const UserBookingsPage: React.FC = () => {
               key={booking.bookingId}
               booking={booking}
               onDownloadTicket={handleDownloadTicket}
+              onCancel={handleCancel}
+              onChangeSeat={handleChangeSeat}
               isDownloading={downloadingId === booking.bookingId}
+              isWorking={actionId === booking.bookingId}
             />
           ))}
         </div>

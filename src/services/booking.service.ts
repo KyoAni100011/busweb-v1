@@ -72,10 +72,10 @@ export const bookingService = {
   },
 
   async cancelBooking(bookingId: string): Promise<void> {
-    await api.post(`/user/booking/${bookingId}/cancel`);
+    await api.post(`/booking/${bookingId}/cancel`);
   },
 
   async updateSeat(bookingId: string, seatCode: string): Promise<void> {
-    await api.patch(`/user/booking/${bookingId}/seats`, { seatCode });
+    await api.patch(`/booking/${bookingId}/seats`, { seatCode });
   },
 };

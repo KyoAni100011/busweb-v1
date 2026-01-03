@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { bookingService } from '@/services/booking.service';
 import type { BookingHistoryItem } from '@/types';
 
@@ -16,6 +17,8 @@ export const BookingHistoryPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [actionId, setActionId] = useState<string | null>(null);
+  const [seatEditId, setSeatEditId] = useState<string | null>(null);
+  const [seatCodeDraft, setSeatCodeDraft] = useState<string>('');
 
   const loadHistory = useCallback(async () => {
     setIsLoading(true);
@@ -58,6 +61,9 @@ export const BookingHistoryPage: React.FC = () => {
   };
 
   const handleCancel = async (bookingId: string) => {
+    if (!window.confirm('Cancel this booking?')) {
+      return;
+    }
     setActionId(bookingId);
     try {
       await bookingService.cancelBooking(bookingId);
@@ -68,13 +74,25 @@ export const BookingHistoryPage: React.FC = () => {
     }
   };
 
+  const startSeatEdit = (bookingId: string, currentSeats: string[]) => {
+    setSeatEditId(bookingId);
+    setSeatCodeDraft(currentSeats[0] ?? '');
+    setError('');
+  };
+
   const handleUpdateSeat = async (bookingId: string) => {
-    const seatCode = window.prompt('Enter new seat code');
-    if (!seatCode) return;
+    const seatCode = seatCodeDraft.trim();
+    if (!seatCode) {
+      setError('Seat code cannot be empty');
+      return;
+    }
+
     setActionId(bookingId);
     try {
-      await bookingService.updateSeat(bookingId, seatCode.trim());
+      await bookingService.updateSeat(bookingId, seatCode);
       await loadHistory();
+      setSeatEditId(null);
+      setSeatCodeDraft('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to update seat');
       setActionId(null);
@@ -136,13 +154,56 @@ export const BookingHistoryPage: React.FC = () => {
                   <p className="text-base font-semibold text-gray-900">{formatCurrency(booking.totalPaid, booking.currency)}</p>
                   <p className="text-sm text-muted-foreground">Seats: {booking.seats.join(', ')}</p>
                   <div className="mt-3 flex flex-wrap justify-end gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleDownloadTicket(booking.bookingId, booking.referenceCode)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownloadTicket(booking.bookingId, booking.referenceCode)}
+                    >
                       Download ticket
                     </Button>
-                    <Button variant="ghost" size="sm" disabled={actionId === booking.bookingId} onClick={() => handleUpdateSeat(booking.bookingId)}>
-                      {actionId === booking.bookingId ? 'Updating…' : 'Change seat'}
-                    </Button>
-                    <Button variant="destructive" size="sm" disabled={actionId === booking.bookingId} onClick={() => handleCancel(booking.bookingId)}>
+                    {seatEditId === booking.bookingId ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Input
+                          className="h-9 w-28"
+                          value={seatCodeDraft}
+                          onChange={(e) => setSeatCodeDraft(e.target.value)}
+                          placeholder="Seat code"
+                        />
+                        <Button
+                          size="sm"
+                          disabled={actionId === booking.bookingId}
+                          onClick={() => handleUpdateSeat(booking.bookingId)}
+                        >
+                          {actionId === booking.bookingId ? 'Saving…' : 'Save'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setSeatEditId(null);
+                            setSeatCodeDraft('');
+                            setActionId(null);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={actionId === booking.bookingId || booking.status === 'CANCELLED'}
+                        onClick={() => startSeatEdit(booking.bookingId, booking.seats)}
+                      >
+                        Change seat
+                      </Button>
+                    )}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={actionId === booking.bookingId || booking.status === 'CANCELLED'}
+                      onClick={() => handleCancel(booking.bookingId)}
+                    >
                       {actionId === booking.bookingId ? 'Cancelling…' : 'Cancel'}
                     </Button>
                   </div>
